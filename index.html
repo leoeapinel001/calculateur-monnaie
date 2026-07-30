@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur de Monnaie par Pesée</title>
+    <style>
+        /* --- DESIGN SYSTEM (Inspiré Shadcn / Tailwind) --- */
+        :root {
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        /* Conteneur principal (Effet Carte) */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        /* --- HEADER --- */
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Barre de progression */
+        .progress-container {
+            margin-top: 1.5rem;
+            background: var(--border);
+            border-radius: 9999px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* --- CONTENU DYNAMIQUE --- */
+        .step-content {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Animation de transition */
+        .fade-in {
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Composants de saisie */
+        .coin-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .coin-badge {
+            background: #f1f5f9;
+            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 800;
+            padding: 1rem 2rem;
+            border-radius: var(--radius);
+            border: 2px dashed var(--border);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1.125rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .input-unit {
+            position: absolute;
+            right: 1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Boutons de navigation */
+        .actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        button {
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            flex: 2;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            color: var(--text-main);
+        }
+
+        /* --- TABLEAU DES RÉSULTATS --- */
+        .results-container {
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.925rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        td {
+            color: var(--text-main);
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .total-row {
+            font-weight: 700;
+            font-size: 1.1rem;
+            background: #eff6ff;
+        }
+
+        .total-row td {
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 1rem 0.5rem;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <header>
+            <h1 id="app-title">Balance à monnaie</h1>
+            <p id="app-subtitle" class="subtitle">Pesez vos pièces pour calculer leur valeur</p>
+            <div class="progress-container" id="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </header>
+
+        <!-- Zone Dynamique injectée par JS -->
+        <main class="step-content" id="dynamic-content"></main>
+    </div>
+
+    <footer>
+        Calcul basé sur les masses officielles de l'Euro de la BCE.
+    </footer>
+
+    <script>
+        // --- DONNÉES DE RÉFÉRENCE (Étalons BCE) ---
+        const COIN_TYPES = [
+            { id: '1ct',  label: '1 centime',  nominalValue: 0.01, unitWeight: 2.30 },
+            { id: '2ct',  label: '2 centimes', nominalValue: 0.02, unitWeight: 3.06 },
+            { id: '5ct',  label: '5 centimes', nominalValue: 0.05, unitWeight: 3.92 },
+            { id: '10ct', label: '10 centimes', nominalValue: 0.10, unitWeight: 4.10 },
+            { id: '20ct', label: '20 centimes', nominalValue: 0.20, unitWeight: 5.74 },
+            { id: '50ct', label: '50 centimes', nominalValue: 0.50, unitWeight: 7.80 },
+            { id: '1e',   label: '1 euro',      nominalValue: 1.00, unitWeight: 7.50 },
+            { id: '2e',   label: '2 euros',     nominalValue: 2.00, unitWeight: 8.50 }
+        ];
+
+        // --- ÉTAT GLOBAL DE L'APPLICATION ---
+        const state = {
+            currentStepIndex: 0, 
+            weights: {} 
+        };
+
+        const container = document.getElementById('dynamic-content');
+        const progressBar = document.getElementById('progress-bar');
+        const appTitle = document.getElementById('app-title');
+        const appSubtitle = document.getElementById('app-subtitle');
+        const progressContainer = document.getElementById('progress-container');
+
+        // --- MOTEUR DE CALCUL ---
+        function calculateCoinMetrics(weight, unitWeight, nominalValue) {
+            if (!weight || weight <= 0) return { quantity: 0, totalValue: 0 };
+            const quantity = Math.round(weight / unitWeight);
+            const totalValue = quantity * nominalValue;
+            return { quantity, totalValue };
+        }
+
+        // --- CORPS DU RENDU DYNAMIQUE ---
+        function render() {
+            // Ajout d'une animation fluide à chaque transition
+            container.innerHTML = '';
+            container.classList.remove('fade-in');
+            void container.offsetWidth; // Déclencheur de reflow pour réinitialiser l'animation CSS
+            container.classList.add('fade-in');
+
+            // Étape finale : Affichage des résultats
+            if (state.currentStepIndex >= COIN_TYPES.length) {
+                renderResults();
+                return;
+            }
+
+            // Étape en cours : Saisie de la pesée
+            const currentCoin = COIN_TYPES[state.currentStepIndex];
+            
+            // Mise à jour de la barre de progression globale
+            const progressPercent = (state.currentStepIndex / COIN_TYPES.length) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+            
+            appTitle.textContent = "Saisie des pesées";
+            appSubtitle.textContent = `Étape ${state.currentStepIndex + 1} sur ${COIN_TYPES.length}`;
+            progressContainer.style.display = 'block';
+
+            // Récupération de la valeur précédente si elle existe
+            const previousValue = state.weights[currentCoin.id] || '';
+
+            container.innerHTML = `
+                <div class="coin-display">
+                    <div class="coin-badge">${currentCoin.label}</div>
+                    <p class="subtitle">Déposez le lot sur la balance</p>
+                </div>
+                <div class="form-group">
+                    <label for="weight-input">Poids total affiché</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="weight-input" min="0" step="0.01" placeholder="0.00" value="${previousValue}" autofocus>
+                        <span class="input-unit">g</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    ${state.currentStepIndex > 0 ? `<button type="button" class="btn-secondary" id="btn-back">Retour</button>` : ''}
+                    <button type="button" class="btn-primary" id="btn-next">
+                        ${state.currentStepIndex === COIN_TYPES.length - 1 ? 'Terminer et Calculer' : 'Suivant'}
+                    </button>
+                </div>
+            `;
+
+            // Événements boutons
+            document.getElementById('btn-next').addEventListener('click', handleNext);
+            if (state.currentStepIndex > 0) {
+                document.getElementById('btn-back').addEventListener('click', handleBack);
+            }
+
+            // Soumission via la touche Entrée
+            document.getElementById('weight-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleNext();
+            });
+        }
+
+        // --- GESTIONNAIRES D'ACTIONS ---
+        function handleNext() {
+            const input = document.getElementById('weight-input');
+            const currentCoin = COIN_TYPES[state.currentStepIndex];
+            
+            // On stocke la valeur (0 par défaut si vide ou négatif)
+            const value = parseFloat(input.value);
+            state.weights[currentCoin.id] = (isNaN(value) || value < 0) ? 0 : value;
+
+            state.currentStepIndex++;
+            render();
+        }
+
+        function handleBack() {
+            if (state.currentStepIndex > 0) {
+                state.currentStepIndex--;
+                render();
+            }
+        }
+
+        function resetApp() {
+            state.currentStepIndex = 0;
+            state.weights = {};
+            render();
+        }
+
+        // --- GÉNÉRATION DU RECAPITULATIF FINAL ---
+        function renderResults() {
+            appTitle.textContent = "Tableau Récapitulatif";
+            appSubtitle.textContent = "Voici l'estimation finale de votre lot de monnaie.";
+            progressContainer.style.display = 'none';
+
+            let globalTotalAmount = 0;
+            let rowsHtml = '';
+
+            COIN_TYPES.forEach(coin => {
+                const weight = state.weights[coin.id] || 0;
+                const { quantity, totalValue } = calculateCoinMetrics(weight, coin.unitWeight, coin.nominalValue);
+                globalTotalAmount += totalValue;
+
+                rowsHtml += `
+                    <tr>
+                        <td><strong>${coin.label}</strong></td>
+                        <td class="text-right">${weight.toFixed(2)} g</td>
+                        <td class="text-right">${quantity}</td>
+                        <td class="text-right"><strong>${totalValue.toFixed(2)} €</strong></td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="results-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Catégorie</th>
+                                <th class="text-right">Poids</th>
+                                <th class="text-right">Quantité</th>
+                                <th class="text-right">Total (€)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                            <tr class="total-row">
+                                <td colspan="3">VALEUR TOTALE</td>
+                                <td class="text-right">${globalTotalAmount.toFixed(2)} €</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="actions" style="margin-top: 2rem;">
+                        <button type="button" class="btn-primary" id="btn-reset">Recommencer une pesée</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('btn-reset').addEventListener('click', resetApp);
+        }
+
+        // Initialisation au chargement de la page
+        render();
+    </script>
+</body>
+</html>
