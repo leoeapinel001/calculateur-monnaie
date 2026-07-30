@@ -245,8 +245,19 @@
         footer {
             margin-top: 2rem;
             text-align: center;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -266,7 +277,8 @@
     </div>
 
     <footer>
-        Calcul basé sur les masses officielles de l'Euro de la BCE.
+        © 2026 Léo EA PINEL. Tous droits réservés.<br>
+        Contact Linkedin : <a href="https://www.linkedin.com/in/l%C3%A9o-ea-pinel-563b3a73/" target="_blank" rel="noopener noreferrer">https://www.linkedin.com/in/léo-ea-pinel-563b3a73/</a>
     </footer>
 
     <script>
@@ -304,7 +316,6 @@
 
         // --- CORPS DU RENDU DYNAMIQUE ---
         function render() {
-            // Ajout d'une animation fluide à chaque transition
             container.innerHTML = '';
             container.classList.remove('fade-in');
             void container.offsetWidth; // Déclencheur de reflow pour réinitialiser l'animation CSS
@@ -327,7 +338,6 @@
             appSubtitle.textContent = `Étape ${state.currentStepIndex + 1} sur ${COIN_TYPES.length}`;
             progressContainer.style.display = 'block';
 
-            // Récupération de la valeur précédente si elle existe
             const previousValue = state.weights[currentCoin.id] || '';
 
             container.innerHTML = `
@@ -350,13 +360,11 @@
                 </div>
             `;
 
-            // Événements boutons
             document.getElementById('btn-next').addEventListener('click', handleNext);
             if (state.currentStepIndex > 0) {
                 document.getElementById('btn-back').addEventListener('click', handleBack);
             }
 
-            // Soumission via la touche Entrée
             document.getElementById('weight-input').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') handleNext();
             });
@@ -367,7 +375,6 @@
             const input = document.getElementById('weight-input');
             const currentCoin = COIN_TYPES[state.currentStepIndex];
             
-            // On stocke la valeur (0 par défaut si vide ou négatif)
             const value = parseFloat(input.value);
             state.weights[currentCoin.id] = (isNaN(value) || value < 0) ? 0 : value;
 
